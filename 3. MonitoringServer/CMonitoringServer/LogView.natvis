@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <Type Name="stNetLog">
+    <DisplayString> {{idx={idx} shType={shType} iSessionID={iSessionID} iReleaseKey={iReleaseKey} iAccountID={iAccountID} bIsAlive={bIsAlive}}}</DisplayString>
+  </Type>
+	
+	<Type Name="stIOLog">
+		<DisplayString> {{idx={idx} shType={shType} iSessionID={iSessionID} iIOCount={iIOCount} bIsAlive={bIsAlive}}}</DisplayString>
+	</Type>
+  
+  <Type Name="stChatLog">
+    <DisplayString> {{idx={idx} shType={shType} iAccountNo={iAccountNo} iSessionID={iSessionID} bIsAlive={bIsAlive}}}</DisplayString>
+  </Type>
+</AutoVisualizer>

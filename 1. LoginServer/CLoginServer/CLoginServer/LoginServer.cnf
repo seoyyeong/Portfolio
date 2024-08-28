@@ -1,0 +1,91 @@
+/////////////////////////////////////////////////////
+//
+// 채팅 서버 Config
+//
+/////////////////////////////////////////////////////
+
+:LOGIN_SERVER
+{
+	//------------------------------------------------------
+	// Listen IP / PORT
+	//------------------------------------------------------
+	BIND_IP			= "0.0.0.0"
+	BIND_PORT		= 11203
+	NAGLE			= 0
+	ZEROCOPYSEND		= F
+
+	IOCP_WORKER_THREAD	= 3
+	IOCP_ACTIVE_THREAD	= 2
+
+
+	SESSION_MAX 		= 10000
+
+	//-----------------------------------
+	// Packet Encode Key
+	//-----------------------------------
+	PACKET_CODE	= 119
+	PACKET_KEY	= 50
+
+	//-----------------------------------
+	// SystemLog Level
+	//-----------------------------------
+//	LOG_LEVEL = "DEBUG"
+//	LOG_LEVEL = "WARNING"
+	LOG_LEVEL = "ERROR"
+
+	// 미응답 유저 타임아웃 처리
+	TIMEOUT_DISCONNECT		= 3000
+	TIMEOUT_SENDRESERVE		= 100
+	
+	//타임아웃, 보내고 기다리고 끊기 사용여부
+	CHECK_TIMEOUT			= F
+	RESERVE_DISCONNECT		= T
+
+	//-----------------------------------
+	// CONTENTS
+	//-----------------------------------
+
+	GAMESERVER_IP 		= "127.0.0.1"
+	GAMESERVER_PORT 	= 11203
+	CHATSERVER_IP		= "127.0.0.1"
+	CHATSERVER_PORT		= 11201
+
+	//DB
+	DB_IP			= "127.0.0.1"
+	DB_PORT			= 3306
+	DB_USERNAME		= "root"
+	DB_PASSWORD		= "Procademy(!)01"
+	DB_DBNAME		= "accountdb"
+
+}
+
+:MONITORING_CLIENT
+{
+	//------------------------------------------------------
+	// SERVER IP / PORT
+	//------------------------------------------------------
+	SERVER_IP		= "127.0.0.1"
+	SERVER_PORT		= 11205
+	SERVER_TYPE		= 1  //0 : chat, 1 : login, 2 : game
+
+	IOCP_WORKER_THREAD	= 1
+	IOCP_ACTIVE_THREAD	= 1
+
+
+	//-----------------------------------
+	// SystemLog Level
+	//-----------------------------------
+//	LOG_LEVEL = 0 "DEBUG"
+//	LOG_LEVEL = 1 "WARNING"
+	LOG_LEVEL = 2 "ERROR"
+//	LOG_LEVEL = 3 "SYSTEM"
+
+	// 미응답 유저 타임아웃 처리
+	TIMEOUT_LOGIN			= 30000
+	TIMEOUT_SENDRESERVE		= 20000
+	
+	//타임아웃, 보내고 기다리고 끊기 사용여부
+	CHECK_TIMEOUT			= F
+	RESERVE_DISCONNECT		= F
+
+}

@@ -1,0 +1,84 @@
+/////////////////////////////////////////////////////
+//
+// 채팅 서버 Config
+//
+/////////////////////////////////////////////////////
+
+:CHAT_SERVER
+{
+	//------------------------------------------------------
+	// Listen IP / PORT
+	//------------------------------------------------------
+	BIND_IP			= "0.0.0.0"
+	BIND_PORT		= 11201
+	NAGLE			= 0
+	ZEROCOPYSEND		= F
+
+	IOCP_WORKER_THREAD	= 6
+	IOCP_ACTIVE_THREAD	= 3
+
+
+	SESSION_MAX 		= 7000
+	USER_MAX		= 5000
+
+	//------------------------------------------------------
+	// Redis IP / PORT
+	//------------------------------------------------------
+	REDIS_IP		= "127.0.0.1"
+	REDIS_PORT		= 6379
+
+	//-----------------------------------
+	// Packet Encode Key
+	//-----------------------------------
+	PACKET_CODE	= 119
+	PACKET_KEY	= 50
+
+	//-----------------------------------
+	// SystemLog Level
+	//-----------------------------------
+//	LOG_LEVEL = "DEBUG"
+//	LOG_LEVEL = "WARNING"
+	LOG_LEVEL = "ERROR"
+
+	// 미응답 유저 타임아웃 처리
+	TIMEOUT_LOGIN			= 3000
+	TIMEOUT_SENDRESERVE		= 100
+	TIMEOUT_CONTENTS		= 30000
+	
+	//타임아웃, 보내고 기다리고 끊기 사용여부
+	CHECK_TIMEOUT			= F
+	RESERVE_DISCONNECT		= F
+
+
+}
+
+:MONITORING_CLIENT
+{
+	//------------------------------------------------------
+	// SERVER IP / PORT
+	//------------------------------------------------------
+	SERVER_IP		= "127.0.0.1"
+	SERVER_PORT		= 11205
+	SERVER_TYPE		= 0
+
+	IOCP_WORKER_THREAD	= 1
+	IOCP_ACTIVE_THREAD	= 1
+
+
+	//-----------------------------------
+	// SystemLog Level
+	//-----------------------------------
+//	LOG_LEVEL = 0 "DEBUG"
+//	LOG_LEVEL = 1 "WARNING"
+	LOG_LEVEL = 2 "ERROR"
+//	LOG_LEVEL = 3 "SYSTEM"
+
+	// 미응답 유저 타임아웃 처리
+	TIMEOUT_LOGIN			= 30000
+	TIMEOUT_SENDRESERVE		= 20000
+	
+	//타임아웃, 보내고 기다리고 끊기 사용여부
+	CHECK_TIMEOUT			= F
+	RESERVE_DISCONNECT		= F
+
+}
