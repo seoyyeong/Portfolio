@@ -457,7 +457,7 @@ void CChatServer::PacketProcMoveSector(SESSION_ID iSessionID, CPacket* pPacket)
 
 					ReleaseSRWLockExclusive(&Sector[OldY][OldX].SectorLock);
 				}
-				Sleep(0);
+				YieldProcessor();
 			}
 
 			ReleaseSRWLockExclusive(&Sector[shY][shX].SectorLock);
