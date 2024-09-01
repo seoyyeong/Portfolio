@@ -14,11 +14,6 @@ CChatServer::~CChatServer(void)
 		StopChatServer();
 	}
 
-	if (ChatUserPool != nullptr)
-	{
-		delete ChatUserPool;
-	}
-
 }
 
 void CChatServer::InitChatVariable(void)
@@ -98,6 +93,8 @@ void CChatServer::StopChatServer(void)
 {
 	MonitorClient.StopMonitoringClient();
 	wprintf(L"ChatServer Stop : Session %d / User %d\n",GetSessionCount(), PlayerMap.size());
+
+	delete ChatUserPool;
 }
 
 
