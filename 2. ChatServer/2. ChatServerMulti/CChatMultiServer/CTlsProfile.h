@@ -79,9 +79,7 @@ public:
 	static bool BeginProfile(const char* tag);
 	static bool EndProfile(const char* tag);
 
-
 	static void ProfileDataOutText(void);
-
 	static void ProfileReset(void);
 
 private:
@@ -93,6 +91,7 @@ private:
 	static CTlsProfile*			 _pInst;
 	static std::mutex            _Mutex;
 	static CRITICAL_SECTION		 _ProfileLock;
+	static SRWLOCK			     _FileLock;
 	static DWORD			     _dwTlsIndex;
 	static std::list<PROFILE_SAMPLE*> _ThreadList;
 };

@@ -8,6 +8,7 @@ std::list<CTlsProfile::PROFILE_SAMPLE*> CTlsProfile::_ThreadList;
 std::mutex CTlsProfile::_Mutex;
 CTlsProfile*     CTlsProfile::_pInst;
 CRITICAL_SECTION CTlsProfile::_ProfileLock;
+SRWLOCK          CTlsProfile::_FileLock;
 DWORD		     CTlsProfile::_dwTlsIndex;
 LARGE_INTEGER                  TimeFreq;
 
@@ -16,6 +17,7 @@ CTlsProfile::CTlsProfile(void)
 	_dwTlsIndex = TlsAlloc();
 	QueryPerformanceFrequency(&TimeFreq);
 	InitializeCriticalSection(&_ProfileLock);
+	InitializeSRWLock(&_FileLock);
 
 	if (_dwTlsIndex == TLS_OUT_OF_INDEXES)
 	{
@@ -292,6 +294,7 @@ void CTlsProfile::ProfileDataOutText(void)
 	//ÆÄÀÏ IO
 	GetLocalTime(&stNowTime);
 
+	AcquireSRWLockExclusive(&_FileLock);
 	_mkdir("../Profile");
 
 	sprintf_s(
@@ -378,4 +381,5 @@ void CTlsProfile::ProfileDataOutText(void)
 	fwrite(FileBuf, (OutData.size() + 2) * LINE_LEN * OutData.size(), 1, pFile);
 	delete[] FileBuf;
 	fclose(pFile);
+	ReleaseSRWLockExclusive(&_FileLock);
 }

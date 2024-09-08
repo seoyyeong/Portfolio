@@ -112,22 +112,6 @@ void CLog::Log(const WCHAR* szType, int LogLevel, const WCHAR* szStringFormat, .
 
 }
 
-void CLog::LogHex(const WCHAR* szType, int LogLevel, const WCHAR* szLog, BYTE* pByte, int iByteLen)
-{
-	CLog* pInst = GetInstance();
-
-	if (pInst->iLogLevel > LogLevel)
-	{
-		return;
-	}
-
-	EnterCriticalSection(&pInst->LogLock);
-	//AcquireSRWLockExclusive(&pInst->LogLock);
-
-
-	LeaveCriticalSection(&pInst->LogLock);
-	//ReleaseSRWLockExclusive(&pInst->LogLock);
-}
 
 void CLog::SetLevel(int iLevel)
 {

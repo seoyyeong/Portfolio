@@ -1,9 +1,6 @@
 #pragma once
-#include <iostream>
-#include <Windows.h>
-#include <unordered_map>
-#include <mutex>
-#include <strsafe.h>
+#include "pch.h"
+
 
 #define dfLOG_MAX_LEN 1024
 #define dfLOG_LEVEL_TYPECNT 4
@@ -36,7 +33,6 @@ public:
 	static void  Destroy(void);
 
 	static void Log(const WCHAR* szType, int LogLevel, const WCHAR* szStringFormat, ...);
-	static void LogHex(const WCHAR* szType, int LogLevel, const WCHAR* szLog, BYTE* pByte, int iByteLen);
 
 	static void SetLevel(int iLevel);
 	static void SetLevel(const WCHAR* pLevel);
