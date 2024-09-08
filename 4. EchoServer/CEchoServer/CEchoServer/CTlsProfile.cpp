@@ -1,10 +1,12 @@
+
 #include "pch.h"
 #include "CTlsProfile.h"
 
 
 
 std::list<CTlsProfile::PROFILE_SAMPLE*> CTlsProfile::_ThreadList;
-CTlsProfile*     CTlsProfile::_pInst = (CTlsProfile*)InitProfile();
+std::mutex CTlsProfile::_Mutex;
+CTlsProfile*     CTlsProfile::_pInst;
 CRITICAL_SECTION CTlsProfile::_ProfileLock;
 DWORD		     CTlsProfile::_dwTlsIndex;
 LARGE_INTEGER                  TimeFreq;
@@ -12,36 +14,31 @@ LARGE_INTEGER                  TimeFreq;
 CTlsProfile::CTlsProfile(void)
 {
 	_dwTlsIndex = TlsAlloc();
+	QueryPerformanceFrequency(&TimeFreq);
+	InitializeCriticalSection(&_ProfileLock);
 
 	if (_dwTlsIndex == TLS_OUT_OF_INDEXES)
 	{
-		int* p = nullptr;
-		*p = 0;
+		CRASH();
 	}
 }
 
-
 CTlsProfile* CTlsProfile::GetInstance(void)
 {
+
 	if (_pInst == nullptr)
 	{
-		EnterCriticalSection(&_ProfileLock);
+		_Mutex.lock();
 		if (_pInst == nullptr)
 		{
 			_pInst = new CTlsProfile;
 			atexit(ReleaseProfile);
 		}
-		LeaveCriticalSection(&_ProfileLock);
+		_Mutex.unlock();
 	}
 	return _pInst;
 }
 
-void* CTlsProfile::InitProfile(void)
-{
-	QueryPerformanceFrequency(&TimeFreq);
-	InitializeCriticalSection(&_ProfileLock);
-	return nullptr;
-}
 
 void CTlsProfile::ReleaseProfile(void)
 {
@@ -84,8 +81,8 @@ bool CTlsProfile::BeginProfile(const char* tag)
 	{
 		ProfileArr = new PROFILE_SAMPLE[MAX_PROFILE_FUNC];
 
-		EnterCriticalSection(&_ProfileLock);
 		CTlsProfile* p = GetInstance();
+		EnterCriticalSection(&_ProfileLock);
 		p->_ThreadList.push_back(ProfileArr);
 		LeaveCriticalSection(&_ProfileLock);
 		TlsSetValue(_dwTlsIndex, ProfileArr);
@@ -149,6 +146,10 @@ bool CTlsProfile::EndProfile(const char* tag)
 		{
 			if (strcmp(tag, ProfileArr[i].szName) == 0)
 			{
+				if (ProfileArr[i].lStartTime.QuadPart == 0)
+				{
+					return FALSE;
+				}
 				QueryPerformanceCounter(&lEndTime);
 				DeltaTime = ((double)(lEndTime.QuadPart - ProfileArr[i].lStartTime.QuadPart)) / 10;
 				ProfileArr[i].dTotalTime += DeltaTime;
@@ -178,6 +179,7 @@ bool CTlsProfile::EndProfile(const char* tag)
 				}
 
 				ProfileArr[i].iCall++;
+				ProfileArr[i].lStartTime.QuadPart = 0;
 
 				return true;
 			}
@@ -207,8 +209,9 @@ void CTlsProfile::ProfileReset(void)
 			ProfileArr[i].dMax[0] = 0;
 			ProfileArr[i].dMax[1] = 0;
 			ProfileArr[i].iCall = 0;
-			ProfileArr[i].szName[0] = '\0';
 		}
+
+		iter = _ThreadList.erase(iter);
 	}
 	LeaveCriticalSection(&_ProfileLock);
 }
@@ -248,22 +251,17 @@ void CTlsProfile::ProfileDataOutText(void)
 		{
 			if (ProfileArr[i][j].lFlag == 1)
 			{
-				bFlag = false;
 				for (int k = 0; k < OutData.size(); k++)
 				{
 					if (strcmp(OutData[k].szName, ProfileArr[i][j].szName) == 0)
 					{
 						//Outliar 데이터 각 4개씩 제외
-
 						OutData[k].dTotal += ProfileArr[i][j].dTotalTime;
-						if (ProfileArr[i][j].iCall > 4)
-						{
-							OutData[k].dTotal -= ProfileArr[i][j].dMax[0] + ProfileArr[i][j].dMax[1];
-							OutData[k].dTotal -= ProfileArr[i][j].dMin[0] + ProfileArr[i][j].dMin[1];
-						}
+						OutData[k].dTotal -= ProfileArr[i][j].dMax[0] + ProfileArr[i][j].dMax[1];
+						OutData[k].dTotal -= ProfileArr[i][j].dMin[0] + ProfileArr[i][j].dMin[1];
+
 						OutData[k].dMax = max(OutData[k].dMax, max(ProfileArr[i][j].dMax[0], ProfileArr[i][j].dMax[1]));
 						OutData[k].dMin = min(OutData[k].dMin, min(ProfileArr[i][j].dMin[0], ProfileArr[i][j].dMin[1]));
-						
 						OutData[k].iCall += ProfileArr[i][j].iCall;
 
 						bFlag = true;
@@ -276,16 +274,12 @@ void CTlsProfile::ProfileDataOutText(void)
 
 					Data.dTotal = ProfileArr[i][j].dTotalTime;
 					//Outliar 데이터 각 4개씩 제외
-					if (Data.iCall > 4)
-					{
-						Data.dTotal -= ProfileArr[i][j].dMax[0] + ProfileArr[i][j].dMax[1];
-						Data.dTotal -= ProfileArr[i][j].dMin[0] + ProfileArr[i][j].dMin[1];
+					Data.dTotal -= ProfileArr[i][j].dMax[0] + ProfileArr[i][j].dMax[1];
+					Data.dTotal -= ProfileArr[i][j].dMin[0] + ProfileArr[i][j].dMin[1];
 
-					}
 					Data.dMax = max(ProfileArr[i][j].dMax[0], ProfileArr[i][j].dMax[1]);
 					Data.dMin = min(ProfileArr[i][j].dMin[0], ProfileArr[i][j].dMin[1]);
 					Data.iCall = ProfileArr[i][j].iCall;
-
 
 					OutData.push_back(Data);
 				}

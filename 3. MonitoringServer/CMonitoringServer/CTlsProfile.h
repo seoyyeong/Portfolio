@@ -3,7 +3,7 @@
 #include "pch.h"
 
 
-//#define __PROFILE
+#define __PROFILE
 
 #ifdef __PROFILE
 #define PRO_BEGIN(TagName)	CTlsProfile::BeginProfile(TagName)
@@ -74,37 +74,14 @@ public:
 
 	static CTlsProfile* GetInstance(void);
 
-	//lock, 싱글톤 인스턴스, QueryPerformanceFreq 초기화
-	static void*		InitProfile();
 	static void         ReleaseProfile();
 
-	/////////////////////////////////////////////////////////////////////////////
-	// 하나의 함수 Profiling 시작, 끝 함수.
-	//
-	// Parameters: (char *)Profiling이름.
-	// Return: 없음.
-	/////////////////////////////////////////////////////////////////////////////
 	static bool BeginProfile(const char* tag);
 	static bool EndProfile(const char* tag);
 
-	/////////////////////////////////////////////////////////////////////////////
-	// Profiling 된 데이타를 Text 파일로 출력한다.
-	//
-	// Parameters: (char *)출력될 파일 이름.
-	// Return: 없음.
-	/////////////////////////////////////////////////////////////////////////////
+
 	static void ProfileDataOutText(void);
 
-	/////////////////////////////////////////////////////////////////////////////
-	// 프로파일링 된 데이터를 모두 초기화 한다.(프로세스 단위)
-	//
-	// Parameters: 없음.
-	// Return: 없음.
-	// 
-	// 주의사항 : 만약 프로파일링 데이터를 쓰다가(beginprofile, endprofile 또는 Dataout 도중...)
-	//           이 함수에 진입했을 경우에는 다른 스레드의 동작 중 데이터가 오염될 수 있습니다.
-	//           
-	/////////////////////////////////////////////////////////////////////////////
 	static void ProfileReset(void);
 
 private:
@@ -114,6 +91,7 @@ private:
 	~CTlsProfile() {};
 
 	static CTlsProfile*			 _pInst;
+	static std::mutex            _Mutex;
 	static CRITICAL_SECTION		 _ProfileLock;
 	static DWORD			     _dwTlsIndex;
 	static std::list<PROFILE_SAMPLE*> _ThreadList;

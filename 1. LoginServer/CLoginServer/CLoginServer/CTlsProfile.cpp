@@ -5,7 +5,8 @@
 
 
 std::list<CTlsProfile::PROFILE_SAMPLE*> CTlsProfile::_ThreadList;
-CTlsProfile*     CTlsProfile::_pInst = (CTlsProfile*)InitProfile();
+std::mutex CTlsProfile::_Mutex;
+CTlsProfile*     CTlsProfile::_pInst;
 CRITICAL_SECTION CTlsProfile::_ProfileLock;
 DWORD		     CTlsProfile::_dwTlsIndex;
 LARGE_INTEGER                  TimeFreq;
@@ -13,36 +14,31 @@ LARGE_INTEGER                  TimeFreq;
 CTlsProfile::CTlsProfile(void)
 {
 	_dwTlsIndex = TlsAlloc();
+	QueryPerformanceFrequency(&TimeFreq);
+	InitializeCriticalSection(&_ProfileLock);
 
 	if (_dwTlsIndex == TLS_OUT_OF_INDEXES)
 	{
-		int* p = nullptr;
-		*p = 0;
+		CRASH();
 	}
 }
 
-
 CTlsProfile* CTlsProfile::GetInstance(void)
 {
+
 	if (_pInst == nullptr)
 	{
-		EnterCriticalSection(&_ProfileLock);
+		_Mutex.lock();
 		if (_pInst == nullptr)
 		{
 			_pInst = new CTlsProfile;
 			atexit(ReleaseProfile);
 		}
-		LeaveCriticalSection(&_ProfileLock);
+		_Mutex.unlock();
 	}
 	return _pInst;
 }
 
-void* CTlsProfile::InitProfile(void)
-{
-	QueryPerformanceFrequency(&TimeFreq);
-	InitializeCriticalSection(&_ProfileLock);
-	return nullptr;
-}
 
 void CTlsProfile::ReleaseProfile(void)
 {
@@ -85,8 +81,8 @@ bool CTlsProfile::BeginProfile(const char* tag)
 	{
 		ProfileArr = new PROFILE_SAMPLE[MAX_PROFILE_FUNC];
 
-		EnterCriticalSection(&_ProfileLock);
 		CTlsProfile* p = GetInstance();
+		EnterCriticalSection(&_ProfileLock);
 		p->_ThreadList.push_back(ProfileArr);
 		LeaveCriticalSection(&_ProfileLock);
 		TlsSetValue(_dwTlsIndex, ProfileArr);
@@ -150,6 +146,10 @@ bool CTlsProfile::EndProfile(const char* tag)
 		{
 			if (strcmp(tag, ProfileArr[i].szName) == 0)
 			{
+				if (ProfileArr[i].lStartTime.QuadPart == 0)
+				{
+					return FALSE;
+				}
 				QueryPerformanceCounter(&lEndTime);
 				DeltaTime = ((double)(lEndTime.QuadPart - ProfileArr[i].lStartTime.QuadPart)) / 10;
 				ProfileArr[i].dTotalTime += DeltaTime;
@@ -179,6 +179,7 @@ bool CTlsProfile::EndProfile(const char* tag)
 				}
 
 				ProfileArr[i].iCall++;
+				ProfileArr[i].lStartTime.QuadPart = 0;
 
 				return true;
 			}
