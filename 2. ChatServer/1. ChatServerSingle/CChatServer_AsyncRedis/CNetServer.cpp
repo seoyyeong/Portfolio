@@ -44,7 +44,7 @@ CNetServer::~CNetServer()
 	{
 		delete[] SessionArr;
 	}
-		
+
 	WSACleanup();
 }
 
@@ -502,12 +502,17 @@ unsigned CNetServer::WorkerThread(void* lpParam)
 {
 	bool          ret;
 	DWORD         cbTransferred;
-	CSession* pSession;
+	CSession*     pSession;
 	stOverlapped* pOverlapped;
 
 
 	while (1)
 	{
+		ret = FALSE;
+		cbTransferred = 0;
+		pSession = nullptr;
+		pOverlapped = nullptr;
+
 		ret = GetQueuedCompletionStatus(hIOCP, &cbTransferred, (PULONG_PTR)&pSession, (LPOVERLAPPED*)&pOverlapped, INFINITE);
 
 		if (pOverlapped == nullptr)
@@ -601,7 +606,7 @@ unsigned CNetServer::CheckDisconnectThread(void* lpParam)
 
 bool CNetServer::Release(CSession* pSession)
 {
-	CPacket*   pPacket;
+	CPacket* pPacket;
 	SOCKET     sock;
 	SESSION_ID iSessionID;
 
@@ -761,7 +766,7 @@ void CNetServer::RecvPost(CSession* pSession)
 		err = WSAGetLastError();
 		if (err != ERROR_IO_PENDING)
 		{
-			if (err!= 10004 && err != 10053 && err != 10054)
+			if (err != 10004 && err != 10053 && err != 10054)
 			{
 				_LOG(L"NETWORK", CLog::LEVEL_ERROR, L"RecvPost Error : WSArecv error %d(id %lld)", err, pSession->iSessionID);
 			}

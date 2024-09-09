@@ -502,12 +502,17 @@ unsigned CNetServer::WorkerThread(void* lpParam)
 {
 	bool          ret;
 	DWORD         cbTransferred;
-	CSession* pSession;
+	CSession*     pSession;
 	stOverlapped* pOverlapped;
 
 
 	while (1)
 	{
+		ret = FALSE;
+		cbTransferred = 0;
+		pSession = nullptr;
+		pOverlapped = nullptr;
+
 		ret = GetQueuedCompletionStatus(hIOCP, &cbTransferred, (PULONG_PTR)&pSession, (LPOVERLAPPED*)&pOverlapped, INFINITE);
 
 		if (pOverlapped == nullptr)
